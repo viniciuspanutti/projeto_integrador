@@ -377,16 +377,6 @@ while opcao != "6":
         print(f'{"% Resíduos recicláveis":^25}', end='|')
         print(f'{"Meio de transporte":^50}', end='|\033[0m\n')
         print('='*143)
-
-#        for linha in resultado:
-#            print(f'{linha[0]:^5}', end='|')
-#            print(f'{linha[1]:^20}', end='|')
-#            print(f'{str(linha[2]) + " L":^20}', end='|')
-#            print(f'{str(linha[3]) + " kWh":^25}', end='|')
-#            print(f'{str(linha[4]) + " Kg":^25}', end='|')
-#            print(f'{str(linha[5]) + " %":^25}', end='|')
-#            print(f'{linha[6]:^20}', end='|\n')
-#            print('-'*143)
         for linha in resultado:
             print(f'{linha[0]:^5}', end='|')
             print(f'{linha[1]:^20}', end='|')
@@ -797,14 +787,13 @@ while opcao != "6":
                     print(f"\nErro ao apagar registro: {err}")
             else:
                 print("\nOperação cancelada.")
-        
+        #Linha 800 à 930
         elif opcao_apagar == "2":
-            # Apagar dado específico
             apagar_mais = True
             while apagar_mais:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("\n=-=-=-=-= Apagar dado específico =-=-=-=-=\n")
-                print("Selecione o campo que deseja apagar (definir como NULL/vazio):")
+                print("Selecione o campo que deseja apagar (definir como vazio):")
                 print("1. Data")
                 print("2. Consumo de água (litros)")
                 print("3. Consumo de energia (kWh)")
@@ -834,8 +823,8 @@ while opcao != "6":
                     confirmacao = input(f"\nTem certeza que deseja apagar o campo {campos[campo_apagar]}? (S/N): ")
                     if confirmacao.lower() == 's':
                         try:
-                            # Atualizar campo para NULL
-                            sql_update = f"UPDATE ProjetoDeSustentabilidade SET {campos[campo_apagar]} = NULL WHERE ID = %s"
+                            # Atualizar campo para vazio
+                            sql_update = f"UPDATE ProjetoDeSustentabilidade SET {campos[campo_apagar]} = '' WHERE ID = %s"
                             cursor.execute(sql_update, (id_apagar,))
                             
                             # Se apagou algum campo que afeta os cálculos, recalcular níveis
@@ -844,12 +833,12 @@ while opcao != "6":
                                 cursor.execute("SELECT LitrosConsumidos, KWHConsumido, KgNaoReciclaveis, PorcentagemResiduos, MeioDeTransporte FROM ProjetoDeSustentabilidade WHERE ID = %s", (id_apagar,))
                                 dados_atuais = cursor.fetchone()
                                 
-                                # Converter valores, tratando NULL como 0 ou string vazia
-                                consumo_litros = float(dados_atuais[0]) if dados_atuais[0] is not None else 0
-                                consumo_kwh = float(dados_atuais[1]) if dados_atuais[1] is not None else 0
-                                geracao_residuos = float(dados_atuais[2]) if dados_atuais[2] is not None else 0
-                                residuos_reciclaveis = float(dados_atuais[3]) if dados_atuais[3] is not None else 0
-                                meios_transporte = dados_atuais[4] if dados_atuais[4] is not None else ""
+                                # Converter valores, tratando vazio como 0 ou string vazia
+                                consumo_litros = float(dados_atuais[0]) if dados_atuais[0] else 0
+                                consumo_kwh = float(dados_atuais[1]) if dados_atuais[1] else 0
+                                geracao_residuos = float(dados_atuais[2]) if dados_atuais[2] else 0
+                                residuos_reciclaveis = float(dados_atuais[3]) if dados_atuais[3] else 0
+                                meios_transporte = dados_atuais[4] if dados_atuais[4] else ""
                                 
                                 # Calcular novos níveis
                                 # Nível de água
@@ -928,6 +917,7 @@ while opcao != "6":
                 continuar = input("\nDeseja apagar mais algum campo neste registro? (S/N): ")
                 if continuar.lower() != 's':
                     apagar_mais = False
+
         elif opcao_apagar == "3":
             print("\nOperação cancelada.")
         else:
@@ -938,65 +928,37 @@ while opcao != "6":
 
     # opção de listar registros
     elif opcao == "4":
-        # Coleta os dados dos registros
-        cursor.execute("SELECT * FROM ProjetoDeSustentabilidade")
-        resultado = cursor.fetchall()
+            # Aqui você deve adicionar a consulta para Manipulacao_Dados
+            cursor.execute("SELECT * FROM Manipulacao_Dados")
+            resultado_class2 = cursor.fetchall()
+            print('\n\033[1m=-=-=-=-= Exibição da classificação dos dados armazenados: =-=-=-=-=\033[0m\n')
+            print('='*143)
+            print(f'\033[1m{"| ID ":^5}', end='|')
+            print(f'{"Consumo de água ":^30}', end='|')
+            print(f'{"Consumo de energia ":^30}', end='|')
+            print(f'{"% de lixo reciclável gerado ":^32}', end='|')
+            print(f'{"Meios de transportes utilizados":^41}', end='|\033[0m\n')
+            print('='*143)
 
-        print('\n\033[1m=-=-=-=-= Exibição dos dados inseridos: =-=-=-=-=\033[0m\n')
-        print('='*143)
-        print(f'\033[1m{"| ID ":^5}', end='|')
-        print(f'{"Data de registro":^20}', end='|')
-        print(f'{"Consumo de água (L)":^20}', end='|')
-        print(f'{"Consumo de energia (kWh)":^25}', end='|')
-        print(f'{"Lixo não reciclável (Kg)":^25}', end='|')
-        print(f'{"% Resíduos recicláveis":^25}', end='|')
-        print(f'{"Meio de transporte":^50}', end='|\033[0m\n')
-        print('='*143)
+            for i, linha in enumerate(resultado_class2):
+                id_usuario = linha[0]
+                consumo_agua = descriptografia_palavras(chave, linha[1])
+                consumo_energia = descriptografia_palavras(chave, linha[2])
+                lixo_reciclavel = descriptografia_palavras(chave, linha[3])
+                meio_transporte = descriptografia_palavras(chave, linha[4])
 
-        for linha in resultado:
-            print(f'{linha[0]:^5}', end='|')
-            print(f'{linha[1]:^20}', end='|')
-            print(f'{str(linha[2]) + " L":^20}', end='|')
-            print(f'{str(linha[3]) + " kWh":^25}', end='|')
-            print(f'{str(linha[4]) + " Kg":^25}', end='|')
-            print(f'{str(linha[5]) + " %":^25}', end='|')
-
-            meio_transporte = linha[6] if linha[6] is not None else "N/A"
-            print(f'{meio_transporte:^50}', end='|\n')
-            print('-'*143)
-
-        # Aqui você deve adicionar a consulta para Manipulacao_Dados
-        cursor.execute("SELECT * FROM Manipulacao_Dados")
-        resultado_class2 = cursor.fetchall()
-
-        print('\n\033[1m=-=-=-=-= Exibição da classificação dos dados armazenados: =-=-=-=-=\033[0m\n')
-        print('='*143)
-        print(f'\033[1m{"| ID ":^5}', end='|')
-        print(f'{"Consumo de água ":^30}', end='|')
-        print(f'{"Consumo de energia ":^30}', end='|')
-        print(f'{"% de lixo reciclável gerado ":^32}', end='|')
-        print(f'{"Meios de transportes utilizados":^41}', end='|\033[0m\n')
-        print('='*143)
-
-        for i, linha in enumerate(resultado_class2):
-            id_usuario = linha[0]
-            consumo_agua = descriptografia_palavras(chave, linha[1])
-            consumo_energia = descriptografia_palavras(chave, linha[2])
-            lixo_reciclavel = descriptografia_palavras(chave, linha[3])
-            meio_transporte = descriptografia_palavras(chave, linha[4])
-
-            print(f'|{id_usuario:^4}', end='|')
-            print(f'{consumo_agua:^30}', end='|')
-            print(f'{consumo_energia:^30}', end='|')
-            print(f'{lixo_reciclavel:^32}', end='|')
-            print(f'{meio_transporte:^41}', end='|\n')
-            print('-'*143)
+                print(f'|{id_usuario:^4}', end='|')
+                print(f'{consumo_agua:^30}', end='|')
+                print(f'{consumo_energia:^30}', end='|')
+                print(f'{lixo_reciclavel:^32}', end='|')
+                print(f'{meio_transporte:^41}', end='|\n')
+                print('-'*143)
 
     #opção para listar a média dos registros
     elif opcao == "5":
-        print('='*50)
-    print('Média dos dados coletados')
-    print('='*50)
+        print('=' * 50)
+        print('Média dos dados coletados')
+        print('=' * 50)
 
     # Média Água
     cursor.execute("SELECT AVG(LitrosConsumidos) FROM ProjetoDeSustentabilidade")
